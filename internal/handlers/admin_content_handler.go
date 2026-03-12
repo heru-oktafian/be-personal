@@ -19,13 +19,43 @@ func (h *SettingHandler) GetAll(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"data": res})
 }
 
+// Get Detail Setting
+func (h *SettingHandler) GetByKey(c *fiber.Ctx) error {
+	key := c.Params("key")
+	res, err := h.uc.GetSettingByKey(c.Context(), key)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Pengaturan tidak ditemukan"})
+	}
+	return c.JSON(fiber.Map{"data": res})
+}
+
+// Add New Setting & Update Setting
+// (Karena berbasis Key-Value, Create dan Update menggunakan metode Upsert yang sama)
 func (h *SettingHandler) Upsert(c *fiber.Ctx) error {
 	var payload entities.SiteSetting
 	if err := c.BodyParser(&payload); err != nil {
-		return c.Status(400).JSON(fiber.Map{"error": "Invalid format"})
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Format request tidak valid"})
 	}
+
+	if payload.Key == "" || payload.Value == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Key dan Value wajib diisi"})
+	}
+
 	if err := h.uc.SaveSetting(c.Context(), &payload); err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err.Error()})
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menyimpan pengaturan"})
 	}
-	return c.JSON(fiber.Map{"message": "Setting saved", "data": payload})
+
+	return c.JSON(fiber.Map{
+		"message": "Pengaturan berhasil disimpan",
+		"data":    payload,
+	})
+}
+
+// Delete Setting
+func (h *SettingHandler) Delete(c *fiber.Ctx) error {
+	key := c.Params("key")
+	if err := h.uc.DeleteSetting(c.Context(), key); err != nil {
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menghapus pengaturan"})
+	}
+	return c.JSON(fiber.Map{"message": "Pengaturan berhasil dihapus"})
 }

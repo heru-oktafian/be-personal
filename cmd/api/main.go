@@ -34,6 +34,10 @@ func main() {
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
+	// 1. Setup Static Files (Folder tempat gambar disimpan)
+	// Fiber akan melayani file di dalam "./public/uploads" ketika ada request ke "/uploads"
+	app.Static("/uploads", "./public/uploads")
+
 	// Setup API Routing
 	// Hapus placeholder routing manual sebelumnya dan ganti dengan ini:
 	routes.SetupRoutes(app, db)

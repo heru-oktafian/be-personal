@@ -2,6 +2,8 @@ package usecases
 
 import (
 	"context"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -36,14 +38,35 @@ func (u *projectUseCase) GetProjectBySlug(ctx context.Context, slug string) (*en
 }
 
 func (u *projectUseCase) CreateProject(ctx context.Context, project *entities.Project) error {
-	// Logika bisnis: Atur ID, CreatedAt, dan UpdatedAt sebelum disimpan ke database
+	// 1. Generate UUID
 	project.ID = uuid.New().String()
 
+	// 2. Auto-generate Slug jika kosong (Logika SEO)
+	if project.Slug == "" {
+		project.Slug = generateSlug(project.Title)
+	}
+
+	// 3. Set Timestamps
 	now := time.Now()
 	project.CreatedAt = now
 	project.UpdatedAt = now
 
+	// 4. Lempar ke Repository
 	return u.projectRepo.Create(ctx, project)
+}
+
+// Fungsi helper (private) untuk membersihkan judul menjadi URL slug
+func generateSlug(title string) string {
+	// Ubah ke lowercase
+	slug := strings.ToLower(title)
+	// Hanya sisakan huruf, angka, dan spasi
+	re := regexp.MustCompile(`[^a-z0-9\s]+`)
+	slug = re.ReplaceAllString(slug, "")
+	// Ganti spasi menjadi strip (-)
+	reSpace := regexp.MustCompile(`\s+`)
+	slug = reSpace.ReplaceAllString(slug, "-")
+
+	return slug
 }
 
 func (u *projectUseCase) GetProjectByID(ctx context.Context, id string) (*entities.Project, error) {

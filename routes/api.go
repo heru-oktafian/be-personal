@@ -71,6 +71,7 @@ func SetupRoutes(app *fiber.App, db *sqlx.DB) {
 	// --- RUTE ADMIN (Dilindungi JWT) ---
 	admin := api.Group("/admin", middleware.Protected())
 	admin.Post("/projects", projectHandler.Create)
+	admin.Get("/projects", projectHandler.GetAll)
 	admin.Get("/projects/:id", projectHandler.GetByID)
 	admin.Put("/projects/:id", projectHandler.Update)
 	admin.Delete("/projects/:id", projectHandler.Delete)
@@ -80,9 +81,11 @@ func SetupRoutes(app *fiber.App, db *sqlx.DB) {
 	admin.Get("/me", adminHandler.GetProfile) // Ambil data admin login
 	admin.Post("/seo", seoHandler.Upsert)     // Simpan/update SEO
 
-	// Settings
+	// --- Settings ---
 	admin.Get("/settings", settingHandler.GetAll)
-	admin.Post("/settings", settingHandler.Upsert) // Gunakan POST/PUT untuk upsert
+	admin.Get("/settings/:key", settingHandler.GetByKey)  // Get Detail Setting
+	admin.Post("/settings", settingHandler.Upsert)        // Add/Update Setting
+	admin.Delete("/settings/:key", settingHandler.Delete) // Delete Setting
 
 	// Services
 	admin.Get("/services", serviceHandler.GetAll)
@@ -91,11 +94,11 @@ func SetupRoutes(app *fiber.App, db *sqlx.DB) {
 	admin.Put("/services/:id", serviceHandler.Update)
 	admin.Delete("/services/:id", serviceHandler.Delete)
 
-	// Skills
+	// --- Skills ---
 	admin.Get("/skills", skillHandler.GetAll)
-	admin.Post("/skills", skillHandler.Create)
-	admin.Get("/skills/:id", skillHandler.GetByID)
-	admin.Put("/skills/:id", skillHandler.Update)
-	admin.Delete("/skills/:id", skillHandler.Delete)
+	admin.Get("/skills/:id", skillHandler.GetByID)   // Get Detail Skill
+	admin.Post("/skills", skillHandler.Create)       // Add New Skill
+	admin.Put("/skills/:id", skillHandler.Update)    // Update Skill
+	admin.Delete("/skills/:id", skillHandler.Delete) // Delete Skill
 
 }
