@@ -1,0 +1,329 @@
+openapi: 3.0.0
+info:
+  title: Personal Website CMS API
+  description: Dokumentasi REST API untuk backend CMS heruoktafian.com
+  version: 1.0.0
+  contact:
+    name: Heru Oktafian
+servers:
+  - url: http://localhost:8080/api/v1
+    description: Local Development Server
+tags:
+  - name: Public
+    description: Endpoint publik yang diakses oleh frontend visitor (tanpa auth)
+  - name: Auth
+    description: Endpoint untuk autentikasi admin
+  - name: Admin
+    description: Endpoint manajemen CMS (membutuhkan JWT)
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    Project:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        slug:
+          type: string
+        description:
+          type: string
+        image_url:
+          type: string
+        tags:
+          type: string
+          example: "NextJS, Golang, Redis"
+        is_published:
+          type: boolean
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+    Contact:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        message:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+    Service:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        description:
+          type: string
+        icon_name:
+          type: string
+        order_num:
+          type: integer
+    Skill:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        category:
+          type: string
+        percentage:
+          type: integer
+        icon_url:
+          type: string
+        order_num:
+          type: integer
+    SiteSetting:
+      type: object
+      properties:
+        key:
+          type: string
+          example: "footer_copyright"
+        value:
+          type: string
+          example: "{\"text\": \"© 2026 Heru Oktafian. Dibuat dengan ❤️ untuk menciptakan solusi digital terbaik.\"}"
+        updated_at:
+          type: string
+          format: date-time
+
+paths:
+  /public/home:
+    get:
+      tags:
+        - Public
+      summary: Ambil data agregasi Homepage
+      responses:
+        '200':
+          description: Sukses mengambil data homepage
+  /public/projects:
+    get:
+      tags:
+        - Public
+      summary: Ambil daftar proyek (published)
+      responses:
+        '200':
+          description: Daftar proyek
+  /public/projects/{slug}:
+    get:
+      tags:
+        - Public
+      summary: Detail proyek berdasarkan slug
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detail proyek
+        '404':
+          description: Proyek tidak ditemukan
+  /public/contact:
+    post:
+      tags:
+        - Public
+      summary: Kirim pesan kontak baru
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                email:
+                  type: string
+                message:
+                  type: string
+      responses:
+        '201':
+          description: Pesan terkirim
+  /public/seo:
+    get:
+      tags:
+        - Public
+      summary: Ambil SEO Metadata dinamis
+      parameters:
+        - name: type
+          in: query
+          required: true
+          schema:
+            type: string
+            example: "Project"
+        - name: id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: SEO Metadata
+  /auth/login:
+    post:
+      tags:
+        - Auth
+      summary: Login Admin
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login sukses
+  /admin/me:
+    get:
+      tags:
+        - Admin
+      summary: Profil Admin saat ini
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Data profil admin
+  /admin/projects:
+    post:
+      tags:
+        - Admin
+      summary: Tambah Proyek Baru
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '201':
+          description: Proyek dibuat
+  /admin/projects/{id}:
+    get:
+      tags:
+        - Admin
+      summary: Ambil detail proyek via ID (untuk form)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Detail proyek
+    put:
+      tags:
+        - Admin
+      summary: Update Proyek
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Project'
+      responses:
+        '200':
+          description: Proyek diupdate
+    delete:
+      tags:
+        - Admin
+      summary: Hapus Proyek
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Proyek dihapus
+  /admin/settings:
+    get:
+      tags:
+        - Admin
+      summary: Ambil semua pengaturan situs
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar settings
+    post:
+      tags:
+        - Admin
+      summary: Upsert pengaturan situs
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SiteSetting'
+      responses:
+        '200':
+          description: Setting disimpan
+  /admin/skills:
+    get:
+      tags:
+        - Admin
+      summary: Ambil semua keahlian
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Daftar skills
+    post:
+      tags:
+        - Admin
+      summary: Tambah keahlian
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Skill'
+      responses:
+        '201':
+          description: Skill dibuat
