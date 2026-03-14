@@ -24,13 +24,13 @@ func main() {
 
 	// Inisialisasi Fiber
 	app := fiber.New(fiber.Config{
-		AppName: "HeruOktafian CMS API",
+		AppName: "CMS API heruoktafian.com",
 	})
 
 	// Middleware Global
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:3000, http://localhost:5173", // Rails publik & React admin
+		AllowOrigins: "http://localhost:1114, http://localhost:1115", // Rails publik & React admin
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
@@ -50,7 +50,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8080"
+		port = "1116"
 	}
 
 	log.Printf("Server berjalan di port %s", port)
