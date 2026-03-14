@@ -30,7 +30,7 @@ func main() {
 	// Middleware Global
 	app.Use(logger.New())
 	app.Use(cors.New(cors.Config{
-		AllowOrigins: "http://localhost:1114, http://localhost:1115", // Rails publik & React admin
+		AllowOrigins: "http://" + os.Getenv("HOST") + ":1114, http://" + os.Getenv("HOST") + ":1115", // Rails publik & React admin
 		AllowHeaders: "Origin, Content-Type, Accept, Authorization",
 	}))
 
