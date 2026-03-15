@@ -1,10 +1,11 @@
 package entities
 
-// Struktur untuk menangkap setting dalam format JSON
+import "time"
+
 type SiteSetting struct {
-	Key       string `json:"key" db:"key"`
-	Value     string `json:"value" db:"value"` // Di-parse sebagai JSON string di Go
-	UpdatedAt string `json:"updated_at" db:"updated_at"`
+	Key       string    `json:"key" db:"key"`
+	Value     string    `json:"value" db:"value"`
+	UpdatedAt time.Time `json:"updated_at" db:"updated_at"`
 }
 
 type Service struct {

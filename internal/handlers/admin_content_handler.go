@@ -44,7 +44,7 @@ func (h *SettingHandler) Upsert(c *fiber.Ctx) error {
 	}
 
 	// WAJIB DITAMBAHKAN: Set waktu pembaruan agar tidak ditolak database
-	payload.UpdatedAt = time.Now().Format(time.RFC3339)
+	payload.UpdatedAt = time.Now()
 
 	if err := h.uc.SaveSetting(c.Context(), &payload); err != nil {
 		// BUKA BLOKIR ERROR: Kita cetak err.Error() agar tahu persis apa yang salah di SQL
