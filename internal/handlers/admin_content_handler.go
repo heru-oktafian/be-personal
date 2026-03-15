@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"time"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/heru-oktafian/be-personal/internal/entities"
 	"github.com/heru-oktafian/be-personal/internal/usecases"
@@ -41,8 +43,15 @@ func (h *SettingHandler) Upsert(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Key dan Value wajib diisi"})
 	}
 
+	// WAJIB DITAMBAHKAN: Set waktu pembaruan agar tidak ditolak database
+	payload.UpdatedAt = time.Now().Format(time.RFC3339)
+
 	if err := h.uc.SaveSetting(c.Context(), &payload); err != nil {
-		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Gagal menyimpan pengaturan"})
+		// BUKA BLOKIR ERROR: Kita cetak err.Error() agar tahu persis apa yang salah di SQL
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+			"error":  "Gagal menyimpan pengaturan",
+			"detail": err.Error(), // <--- Ini kunci utamanya
+		})
 	}
 
 	return c.JSON(fiber.Map{
